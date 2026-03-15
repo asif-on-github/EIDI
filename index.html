@@ -52,25 +52,26 @@ a{text-decoration:none;color:inherit}
 @media(pointer:coarse){.cursor-dot,.cursor-ring{display:none!important}}
 
 /* === NAV === */
-#nav{position:fixed;top:0;left:0;right:0;height:var(--nav-h);z-index:9000;display:flex;align-items:center;justify-content:space-between;padding:0 clamp(1rem,4vw,2.5rem);transition:background .3s,box-shadow .3s;overflow:visible}
+#nav{position:fixed;top:0;left:0;right:0;height:var(--nav-h);z-index:9000;display:flex;align-items:center;justify-content:space-between;padding:0 clamp(1rem,4vw,2.5rem);transition:background .3s,box-shadow .3s}
 #nav.scrolled{background:rgba(253,246,227,.95);backdrop-filter:blur(8px);box-shadow:0 2px 12px rgba(201,130,10,.1)}
-.nav-logo{font-family:var(--ff-logo);font-size:clamp(1.1rem,3vw,1.4rem);display:flex;align-items:center;gap:.45rem;color:var(--cream-white);transition:color .3s;position:relative;z-index:9002}
+.nav-logo{font-family:var(--ff-logo);font-size:clamp(1.1rem,3vw,1.4rem);display:flex;align-items:center;gap:.45rem;color:var(--cream-white);transition:color .3s}
 #nav.scrolled .nav-logo{color:var(--gold)}
 .nav-logo svg{width:20px;height:20px}
 .nav-links{display:flex;gap:clamp(1rem,3vw,2rem);list-style:none}
 .nav-links a{font-size:.8rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gold-light);transition:color .3s}
 #nav.scrolled .nav-links a{color:var(--text-dark)}
 .nav-links a:hover{color:var(--gold-bright)}
-.hamburger{display:none;flex-direction:column;gap:5px;background:none;cursor:pointer;padding:8px;min-width:48px;min-height:48px;align-items:center;justify-content:center;position:relative;z-index:9002;border:none}
+.hamburger{display:none;flex-direction:column;gap:5px;background:none;cursor:pointer;padding:8px;min-width:48px;min-height:48px;align-items:center;justify-content:center}
 .hamburger span{display:block;width:22px;height:2px;background:var(--gold-light);border-radius:2px;transition:transform .3s,opacity .3s}
 #nav.scrolled .hamburger span{background:var(--gold)}
 .hamburger.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
 .hamburger.open span:nth-child(2){opacity:0}
 .hamburger.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
 @media(max-width:768px){
-.nav-links{position:fixed;top:var(--nav-h);left:0;right:0;flex-direction:column;background:rgba(253,246,227,.97);backdrop-filter:blur(10px);padding:1.5rem;gap:1.2rem;transform:translateY(-120%);transition:transform .35s ease;box-shadow:0 6px 20px rgba(0,0,0,.08);z-index:9001}
+.nav-links{position:fixed;top:var(--nav-h);right:0;left:auto;width:auto;flex-direction:column;background:none;backdrop-filter:none;padding:.8rem 1.2rem;gap:.8rem;transform:translateY(-200%);transition:transform .3s ease;box-shadow:none;align-items:flex-end}
 .nav-links.open{transform:translateY(0)}
-.nav-links a{color:var(--text-dark)!important;font-size:.9rem}
+.nav-links li{background:rgba(253,246,227,.92);backdrop-filter:blur(12px);border-radius:50px;padding:.5rem 1.2rem;box-shadow:0 2px 12px rgba(201,130,10,.15)}
+.nav-links a{color:var(--text-dark)!important;font-size:.85rem;display:block}
 .hamburger{display:flex}
 }
 
@@ -438,10 +439,7 @@ if(paramQR){
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
       Save QR
     </button>`;
-  setTimeout(()=>{
-    const dlBtn=$('#download-qr');
-    if(dlBtn) dlBtn.onclick=()=>{const a=document.createElement('a');a.href=paramQR;a.download='eidi-qr.png';a.target='_blank';a.click()};
-  },50);
+  setTimeout(()=>{const dlBtn=$('#download-qr');if(dlBtn)dlBtn.onclick=()=>{const a=document.createElement('a');a.href=paramQR;a.download='eidi-qr.png';a.target='_blank';a.click()}},50);
 }else{
   qrWrapInner.innerHTML=`<div class="qr-placeholder"><span>Your QR code will appear here</span></div>`;
 }
@@ -588,8 +586,8 @@ function getTargetFrame(){
   return Math.min(Math.floor(fraction*(TOTAL_FRAMES-1)),TOTAL_FRAMES-1);
 }
 
-// rAF loop — faster lerp on mobile for responsive feel
-const lerpSpeed=('ontouchstart' in window)?0.3:0.15;
+// rAF loop with interpolation for smooth scrubbing
+const lerpSpeed=('ontouchstart' in window)?0.45:0.15;
 function animationLoop(){
   const target=getTargetFrame();
   displayFrame+=(target-displayFrame)*lerpSpeed;
@@ -641,33 +639,23 @@ uploadArea.addEventListener('dragover',e=>{e.preventDefault();uploadArea.classLi
 uploadArea.addEventListener('dragleave',()=>uploadArea.classList.remove('drag'));
 uploadArea.addEventListener('drop',e=>{e.preventDefault();uploadArea.classList.remove('drag');handleFile(e.dataTransfer.files[0])});
 qrInput.onchange=e=>handleFile(e.target.files[0]);
-
 async function handleFile(f){
-  if(!f) return;
+  if(!f)return;
   uploadedQRUrl=null;
   const reader=new FileReader();
   reader.onload=e=>{
-    uploadArea.innerHTML=`
-      <img src="${e.target.result}" alt="QR Preview" style="max-width:120px;max-height:120px;border-radius:8px">
-      <span style="font-size:.8rem;color:var(--gold);margin-top:.3rem">Uploading...</span>
-      <span class="remove-preview" style="font-size:.75rem;color:var(--text-mid);cursor:pointer;text-decoration:underline">Remove</span>`;
-    uploadArea.querySelector('.remove-preview').onclick=ev=>{
-      ev.stopPropagation();uploadedQRUrl=null;
-      uploadArea.innerHTML='<svg viewBox="0 0 24 24" stroke="var(--gold)" fill="none" stroke-width="1.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><span>Tap to upload QR image</span>';
-      qrInput.value='';$('#generate-btn').disabled=false;
-    };
+    uploadArea.innerHTML=`<img src="${e.target.result}" alt="QR Preview" style="max-width:120px;max-height:120px;border-radius:8px"><span style="font-size:.8rem;color:var(--gold);margin-top:.3rem">Uploading...</span><span class="remove-preview" style="font-size:.75rem;color:var(--text-mid);cursor:pointer;text-decoration:underline">Remove</span>`;
+    uploadArea.querySelector('.remove-preview').onclick=ev=>{ev.stopPropagation();uploadedQRUrl=null;uploadArea.innerHTML='<svg viewBox="0 0 24 24" stroke="var(--gold)" fill="none" stroke-width="1.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><span>Tap to upload QR image</span>';qrInput.value='';$('#generate-btn').disabled=false};
   };
   reader.readAsDataURL(f);
   $('#generate-btn').disabled=true;
   try{
     const ext=f.name.split('.').pop()||'png';
-    const fileName='qr_'+Date.now()+'.'+ext;
-    const{data,error}=await _sb.storage.from('qr-images').upload(fileName,f,{cacheControl:'3600',upsert:false});
-    if(error) throw error;
-    const{data:urlData}=_sb.storage.from('qr-images').getPublicUrl(data.path);
-    uploadedQRUrl=urlData.publicUrl;
-    const status=uploadArea.querySelector('span:not(.remove-preview)');
-    if(status) status.textContent='✅ Ready';
+    const{data,error}=await _sb.storage.from('qr-images').upload('qr_'+Date.now()+'.'+ext,f,{cacheControl:'3600',upsert:false});
+    if(error)throw error;
+    uploadedQRUrl=_sb.storage.from('qr-images').getPublicUrl(data.path).data.publicUrl;
+    const s=uploadArea.querySelector('span:not(.remove-preview)');
+    if(s)s.textContent='✅ Ready';
     $('#generate-btn').disabled=false;
   }catch(err){
     toast('Upload failed, try again');
@@ -686,9 +674,9 @@ $('#generate-btn').onclick=()=>{
   const note=$('#input-note').value.trim();
   if(!num&&!uploadedQRUrl){toast('Enter a number or upload QR');return}
   const p=new URLSearchParams();
-  if(num) p.set('number',num);
-  if(uploadedQRUrl) p.set('qr',uploadedQRUrl);
-  if(note) p.set('note',encodeURIComponent(note));
+  if(num)p.set('number',num);
+  if(uploadedQRUrl)p.set('qr',uploadedQRUrl);
+  if(note)p.set('note',encodeURIComponent(note));
   const url=location.origin+location.pathname+'?'+p.toString();
   $('#result-link').textContent=url;
   $('#result-link').dataset.full=url;
