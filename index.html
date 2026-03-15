@@ -13,6 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{
 --bg-main:#fdf6e3;--bg-section:#fef0d0;--bg-card:#fff8ee;
@@ -128,7 +129,7 @@ a{text-decoration:none;color:inherit}
 .qr-wrap{display:flex;flex-direction:column;align-items:center;gap:1rem}
 .qr-box{width:280px;height:280px;border:2px solid var(--gold-light);border-radius:12px;background:var(--bg-card);display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .qr-box img{display:block;width:280px;height:280px;object-fit:contain}
-.qr-placeholder{width:100%;max-width:300px;min-height:200px;border:2px dashed var(--gold-light);border-radius:12px;background:var(--blossom);display:flex;align-items:center;justify-content:center;padding:2rem}
+.qr-placeholder{width:280px;height:280px;border:2px dashed var(--gold-light);border-radius:12px;background:var(--blossom);display:flex;align-items:center;justify-content:center;padding:2rem}
 .qr-placeholder span{font-family:var(--ff-heading);font-style:italic;color:var(--text-mid);font-size:1.05rem;text-align:center}
 .download-btn{display:inline-flex;align-items:center;gap:.5rem;background:var(--bg-section);color:var(--gold);font-weight:600;padding:.6rem 1.4rem;border-radius:50px;cursor:pointer;border:1px solid var(--gold-light);min-height:48px;transition:background .2s}
 .download-btn:hover{background:var(--gold-light)}
@@ -320,7 +321,11 @@ function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('show'
 function copyText(text){playClick();navigator.clipboard?navigator.clipboard.writeText(text).then(()=>toast('Copied!')):fallbackCopy(text)}
 function fallbackCopy(t){const a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();document.execCommand('copy');document.body.removeChild(a);toast('Copied!')}
 
-/* ===== CLICK SOUND (Web Audio API) ===== */
+/* ===== SUPABASE ===== */
+const _sb=window.supabase.createClient(
+  'https://lvtvzecllqrrovhkbufh.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx2dHZ6ZWNsbHFycm92aGtidWZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM1ODc3NTcsImV4cCI6MjA4OTE2Mzc1N30.PXW_RigUisBdKtOz3fF6rl1qHqDiyw_FCvqyaDsue0Q'
+);
 let audioCtx=null;
 function playClick(){
   try{
@@ -412,16 +417,9 @@ document.addEventListener('scroll',initAmbientOnce,{once:true});
 
 /* ===== URL PARAMS ===== */
 const params=new URLSearchParams(location.search);
-const shortId=params.get('id');
 let paramNumber=params.get('number');
 let paramQR=params.get('qr');
 let paramNote=params.get('note');
-if(shortId){
-  try{
-    const stored=localStorage.getItem(shortId);
-    if(stored){const data=JSON.parse(stored);if(data.number)paramNumber=data.number;if(data.qr)paramQR=data.qr;if(data.note)paramNote=data.note;}
-  }catch(e){}
-}
 const devNumber='01933302333';
 function formatBkash(n){if(!n||n.length!==11)return n||'019 3330 2333';return n.slice(0,3)+' '+n.slice(3,7)+' '+n.slice(7)}
 if(paramNumber){
@@ -432,25 +430,18 @@ document.title='Send Eidi to '+formatBkash(paramNumber)+' 🌙';
 /* ===== QR CARD — always visible ===== */
 const qrWrapInner=$('#qr-wrap-inner');
 if(paramQR){
-  // Show actual QR image with save button
-  const decodedQR=decodeURIComponent(paramQR);
   qrWrapInner.innerHTML=`
-    <div class="qr-box"><img id="qr-img" src="${decodedQR}" alt="QR Code"></div>
+    <div class="qr-box"><img id="qr-img" src="${paramQR}" alt="QR Code"></div>
     <button class="download-btn" id="download-qr" aria-label="Download QR">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
       Save QR
     </button>`;
-  // Bind download
   setTimeout(()=>{
     const dlBtn=$('#download-qr');
-    if(dlBtn) dlBtn.onclick=()=>{const img=$('#qr-img');const a=document.createElement('a');a.href=img.src;a.download='eidi-qr.png';a.click()};
+    if(dlBtn) dlBtn.onclick=()=>{const a=document.createElement('a');a.href=paramQR;a.download='eidi-qr.png';a.target='_blank';a.click()};
   },50);
-} else {
-  // Show placeholder box
-  qrWrapInner.innerHTML=`
-    <div class="qr-placeholder">
-      <span>Your QR code will appear here</span>
-    </div>`;
+}else{
+  qrWrapInner.innerHTML=`<div class="qr-placeholder"><span>Your QR code will appear here</span></div>`;
 }
 
 if(paramNote){
@@ -499,7 +490,9 @@ updateHeroTexts();
 (function(){
 const canvas=$('#hero-canvas');
 const ctx=canvas.getContext('2d');
-const TOTAL_FRAMES=206;
+const isMobile=window.innerWidth<=768;
+const framesFolder=isMobile?'MOBILE_VIDEO_FRAMES':'all%20frames';
+const TOTAL_FRAMES=isMobile?156:206;
 const PRIORITY_COUNT=30;
 const frames=new Array(TOTAL_FRAMES);
 let loadedCount=0;
@@ -557,7 +550,7 @@ function loadFrame(idx){
       resolve();
     };
     img.onerror=()=>resolve(); // skip broken frames
-    img.src='all%20frames/ezgif-frame-'+padNum(idx+1)+'.jpg';
+    img.src=framesFolder+'/ezgif-frame-'+padNum(idx+1)+'.jpg';
   });
 }
 
@@ -635,51 +628,84 @@ document.body.style.cursor='none';
 $$('a,button').forEach(el=>el.style.cursor='none');
 }
 
-/* ===== QR UPLOAD ===== */
+/* ===== QR UPLOAD — via Supabase ===== */
 const uploadArea=$('#upload-area'),qrInput=$('#qr-upload');
-let uploadedQRData=null;
+let uploadedQRUrl=null;
+let uploadedQRFile=null;
+
 uploadArea.onclick=()=>qrInput.click();
 uploadArea.addEventListener('dragover',e=>{e.preventDefault();uploadArea.classList.add('drag')});
 uploadArea.addEventListener('dragleave',()=>uploadArea.classList.remove('drag'));
 uploadArea.addEventListener('drop',e=>{e.preventDefault();uploadArea.classList.remove('drag');handleFile(e.dataTransfer.files[0])});
 qrInput.onchange=e=>handleFile(e.target.files[0]);
-function handleFile(f){
-if(!f)return;
-const reader=new FileReader();
-reader.onload=e=>{
-uploadedQRData=e.target.result;
-uploadArea.innerHTML=`<img src="${uploadedQRData}" alt="QR Preview"><span class="remove-preview">Remove</span>`;
-uploadArea.querySelector('.remove-preview').onclick=ev=>{
-ev.stopPropagation();uploadedQRData=null;
-uploadArea.innerHTML='<svg viewBox="0 0 24 24" stroke="var(--gold)" fill="none" stroke-width="1.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><span>Tap to upload QR image</span>';
-qrInput.value='';
-}};
-reader.readAsDataURL(f);
+
+async function handleFile(f){
+  if(!f) return;
+  uploadedQRUrl=null;
+  uploadedQRFile=f;
+
+  // Show preview immediately
+  const reader=new FileReader();
+  reader.onload=e=>{
+    uploadArea.innerHTML=`
+      <img src="${e.target.result}" alt="QR Preview" style="max-width:120px;max-height:120px;border-radius:8px">
+      <span style="font-size:.8rem;color:var(--gold);margin-top:.3rem">Uploading...</span>
+      <span class="remove-preview" style="font-size:.75rem;color:var(--text-mid);cursor:pointer;text-decoration:underline">Remove</span>`;
+    uploadArea.querySelector('.remove-preview').onclick=ev=>{
+      ev.stopPropagation();
+      uploadedQRUrl=null;uploadedQRFile=null;
+      uploadArea.innerHTML='<svg viewBox="0 0 24 24" stroke="var(--gold)" fill="none" stroke-width="1.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><span>Tap to upload QR image</span>';
+      qrInput.value='';
+      $('#generate-btn').disabled=false;
+    };
+  };
+  reader.readAsDataURL(f);
+
+  // Disable generate button while uploading
+  $('#generate-btn').disabled=true;
+
+  try{
+    const ext=f.name.split('.').pop()||'png';
+    const fileName='qr_'+Date.now()+'.'+ext;
+    const{data,error}=await _sb.storage.from('qr-images').upload(fileName,f,{cacheControl:'3600',upsert:false});
+    if(error) throw error;
+    const{data:urlData}=_sb.storage.from('qr-images').getPublicUrl(data.path);
+    uploadedQRUrl=urlData.publicUrl;
+    // Update upload area to show success
+    const img=uploadArea.querySelector('img');
+    const status=uploadArea.querySelector('span:not(.remove-preview)');
+    if(status) status.textContent='✅ Ready';
+    $('#generate-btn').disabled=false;
+  }catch(err){
+    toast('Upload failed, try again');
+    uploadedQRUrl=null;
+    uploadArea.innerHTML='<svg viewBox="0 0 24 24" stroke="var(--gold)" fill="none" stroke-width="1.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><span>Tap to upload QR image</span>';
+    qrInput.value='';
+    $('#generate-btn').disabled=false;
+  }
 }
 
 /* ===== CHAR COUNTER ===== */
 $('#input-note').addEventListener('input',function(){$('#char-current').textContent=this.value.length});
 
 /* ===== GENERATE LINK ===== */
-function makeShortKey(){return 'eidi_'+Math.random().toString(36).slice(2,8)+Date.now().toString(36).slice(-3)}
 $('#generate-btn').onclick=()=>{
-const num=$('#input-number').value.trim();
-const note=$('#input-note').value.trim();
-if(!num&&!uploadedQRData){toast('Enter a number or upload QR');return}
-const key=makeShortKey();
-const payload={};
-if(num)payload.number=num;
-if(uploadedQRData)payload.qr=uploadedQRData;
-if(note)payload.note=note;
-try{localStorage.setItem(key,JSON.stringify(payload));}catch(e){toast('Storage full');return}
-const url=location.origin+location.pathname+'?id='+key;
-$('#result-link').textContent=url;
-$('#result-link').dataset.full=url;
-$('#result-card').style.display='block';
-$('#result-card').scrollIntoView({behavior:'smooth',block:'center'});
-$('#share-copy').onclick=()=>copyText(url);
-$('#share-native').onclick=()=>{if(navigator.share)navigator.share({title:'Send me Eid Salami! 🌙',url}).catch(()=>{});else copyText(url)};
-$('#share-whatsapp').onclick=()=>window.open('https://wa.me/?text='+encodeURIComponent('Send me Eid Salami! 🌙\n'+url),'_blank');
+  const num=$('#input-number').value.trim();
+  const note=$('#input-note').value.trim();
+  if(!num&&!uploadedQRUrl){toast('Enter a number or upload QR');return}
+  const base=location.origin+location.pathname;
+  const p=new URLSearchParams();
+  if(num) p.set('number',num);
+  if(uploadedQRUrl) p.set('qr',uploadedQRUrl);
+  if(note) p.set('note',encodeURIComponent(note));
+  const url=base+'?'+p.toString();
+  $('#result-link').textContent=url;
+  $('#result-link').dataset.full=url;
+  $('#result-card').style.display='block';
+  $('#result-card').scrollIntoView({behavior:'smooth',block:'center'});
+  $('#share-copy').onclick=()=>copyText(url);
+  $('#share-native').onclick=()=>{if(navigator.share)navigator.share({title:'Send me Eid Salami! 🌙',url}).catch(()=>{});else copyText(url)};
+  $('#share-whatsapp').onclick=()=>window.open('https://wa.me/?text='+encodeURIComponent('Send me Eid Salami! 🌙\n'+url),'_blank');
 };
 </script>
 </body>
