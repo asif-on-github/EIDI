@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<title>EIDI — Send Eid Salami 🌙</title>
+<meta name="description" content="Share your bKash number and collect Eid gift money through a beautiful, personal link.">
+<meta property="og:title" content="EIDI — Send Eid Salami 🌙">
+<meta property="og:description" content="Send Eid Salami with love. Tap the link, see the number, send the gift.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#fdf6e3">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌙</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+--bg-main:#fdf6e3;--bg-section:#fef0d0;--bg-card:#fff8ee;
+--gold:#c9820a;--gold-bright:#f0a500;--gold-light:#fcd97a;
+--arch-gold:#d4930a;--amber:#8b4f10;
+--text-dark:#2c1a00;--text-mid:#5c3a10;
+--blossom:#f5e6c8;--cream-white:#fffdf7;
+--ff-logo:'Cinzel Decorative',serif;
+--ff-heading:'Cormorant Garamond',serif;
+--ff-body:'DM Sans',sans-serif;
+--ff-bn:'Noto Sans Bengali',sans-serif;
+--nav-h:60px;
+--section-py:clamp(3rem,8vw,6rem);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{font-family:var(--ff-body);color:var(--text-dark);background:var(--bg-main);overflow-x:hidden;line-height:1.6}
+img{max-width:100%;display:block}
+button,input,textarea{font:inherit;border:none;outline:none}
+a{text-decoration:none;color:inherit}
+
+/* === LOADING SCREEN === */
+#loader{position:fixed;inset:0;z-index:10000;background:var(--cream-white);display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .6s ease}
+#loader.hide{opacity:0;pointer-events:none}
+#loader svg{width:60px;height:60px;animation:pulse 1.5s ease-in-out infinite}
+#loader p{margin-top:1rem;font-family:var(--ff-heading);font-size:1.2rem;color:var(--gold)}
+#load-bar{width:60%;max-width:200px;height:3px;background:var(--blossom);border-radius:2px;margin-top:1rem;overflow:hidden}
+#load-bar span{display:block;height:100%;width:0%;background:linear-gradient(90deg,var(--gold),var(--gold-bright));border-radius:2px;transition:width .3s}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:.8}50%{transform:scale(1.15);opacity:1}}
+
+/* === CUSTOM CURSOR === */
+.cursor-dot,.cursor-ring{position:fixed;top:0;left:0;pointer-events:none;z-index:99999;border-radius:50%;mix-blend-mode:normal}
+.cursor-dot{width:6px;height:6px;background:var(--gold-bright)}
+.cursor-ring{width:32px;height:32px;border:2px solid var(--gold-light);transition:transform .15s ease,opacity .15s}
+.cursor-ring.hover{transform:translate(-50%,-50%) scale(1.6);opacity:.6}
+@media(pointer:coarse){.cursor-dot,.cursor-ring{display:none!important}}
+
+/* === NAV === */
+#nav{position:fixed;top:0;left:0;right:0;height:var(--nav-h);z-index:9000;display:flex;align-items:center;justify-content:space-between;padding:0 clamp(1rem,4vw,2.5rem);transition:background .3s,box-shadow .3s}
+#nav.scrolled{background:rgba(253,246,227,.95);backdrop-filter:blur(8px);box-shadow:0 2px 12px rgba(201,130,10,.1)}
+.nav-logo{font-family:var(--ff-logo);font-size:clamp(1.1rem,3vw,1.4rem);display:flex;align-items:center;gap:.45rem;color:var(--cream-white);transition:color .3s}
+#nav.scrolled .nav-logo{color:var(--gold)}
+.nav-logo svg{width:20px;height:20px}
+.nav-links{display:flex;gap:clamp(1rem,3vw,2rem);list-style:none}
+.nav-links a{font-size:.8rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gold-light);transition:color .3s}
+#nav.scrolled .nav-links a{color:var(--text-dark)}
+.nav-links a:hover{color:var(--gold-bright)}
+.hamburger{display:none;flex-direction:column;gap:5px;background:none;cursor:pointer;padding:8px;min-width:48px;min-height:48px;align-items:center;justify-content:center}
+.hamburger span{display:block;width:22px;height:2px;background:var(--gold-light);border-radius:2px;transition:transform .3s,opacity .3s}
+#nav.scrolled .hamburger span{background:var(--gold)}
+.hamburger.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+.hamburger.open span:nth-child(2){opacity:0}
+.hamburger.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+@media(max-width:768px){
+.nav-links{position:absolute;top:var(--nav-h);left:0;right:0;flex-direction:column;background:rgba(253,246,227,.97);backdrop-filter:blur(10px);padding:1.5rem;gap:1.2rem;transform:translateY(-120%);transition:transform .35s ease;box-shadow:0 6px 20px rgba(0,0,0,.08)}
+.nav-links.open{transform:translateY(0)}
+.nav-links a{color:var(--text-dark)!important;font-size:.9rem}
+.hamburger{display:flex}
+}
+
+/* === HERO === */
+#hero{position:relative;height:700vh;width:100%}
+#hero-canvas{position:fixed;top:0;left:0;width:100%;height:100vh;z-index:0;display:block}
+#hero-fade{position:fixed;bottom:0;left:0;right:0;height:30vh;background:linear-gradient(to bottom,transparent,var(--bg-main));z-index:1;pointer-events:none}
+
+/* Veo watermark cover */
+#veo-cover{position:fixed;bottom:0;right:0;width:120px;height:40px;z-index:1;pointer-events:none;background:linear-gradient(135deg,rgba(10,10,20,.6),rgba(10,10,20,.9))}
+
+/* Hero text blocks */
+.hero-text{position:fixed;z-index:2;opacity:0;transition:none;pointer-events:none;max-width:380px;padding:0 1.5rem}
+.hero-text .bn{font-family:var(--ff-bn);font-size:clamp(1.6rem,5vw,2.4rem);font-weight:700;color:#ffffff;line-height:1.3;text-shadow:0 2px 12px rgba(0,0,0,.45)}
+.hero-text .en{font-family:var(--ff-heading);font-size:clamp(1rem,3vw,1.3rem);color:#f0e6d2;margin-top:.4rem;font-style:italic;opacity:.9;text-shadow:0 1px 8px rgba(0,0,0,.35)}
+.hero-text.pos-left{left:5%;top:40%}
+.hero-text.pos-right{right:5%;top:38%;text-align:right}
+.hero-text.pos-center{left:50%;top:40%;transform:translateX(-50%);text-align:center}
+
+/* Scroll arrow */
+#scroll-arrow{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);z-index:3;animation:bounce 2s infinite;transition:opacity .4s}
+#scroll-arrow svg{width:28px;height:28px;stroke:var(--gold-light);fill:none;stroke-width:2}
+@keyframes bounce{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(10px)}}
+
+/* === SECTIONS === */
+.section{position:relative;z-index:5;padding:var(--section-py) clamp(1rem,5vw,3rem)}
+.section:nth-child(odd){background:var(--bg-main)}
+.section:nth-child(even){background:var(--bg-section)}
+.section-title{font-family:var(--ff-heading);font-size:clamp(1.8rem,5vw,2.8rem);font-weight:700;color:var(--gold);text-align:center;margin-bottom:.5rem}
+.section-sub{font-family:var(--ff-heading);font-size:clamp(1rem,2.5vw,1.2rem);color:var(--text-mid);text-align:center;margin-bottom:2.5rem;font-style:italic}
+
+/* Geometric pattern overlay */
+.section::before{content:'';position:absolute;inset:0;opacity:.03;pointer-events:none;background-image:url("data:image/svg+xml,%3Csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0L60 30L30 60L0 30Z' fill='none' stroke='%23c9820a' stroke-width='.5'/%3E%3Ccircle cx='30' cy='30' r='10' fill='none' stroke='%23c9820a' stroke-width='.5'/%3E%3C/svg%3E");background-size:60px 60px}
+
+/* Divider */
+.divider{display:flex;align-items:center;justify-content:center;gap:1rem;padding:1.5rem 0}
+.divider::before,.divider::after{content:'';flex:1;max-width:120px;height:1px;background:linear-gradient(90deg,transparent,var(--gold-light),transparent)}
+.divider svg{width:18px;height:18px;fill:var(--gold-light);flex-shrink:0}
+
+/* === CARDS === */
+.card{background:var(--bg-card);border:1px solid var(--gold-light);border-radius:16px;padding:clamp(1.5rem,4vw,2rem);box-shadow:0 4px 24px rgba(201,130,10,.08);max-width:420px;margin:0 auto 1.5rem}
+.card-float{animation:float 4s ease-in-out infinite}
+.card-float-delayed{animation:float 4s ease-in-out infinite;animation-delay:.7s}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+
+/* === GIVE EIDI === */
+#give-eidi{text-align:center}
+.bkash-number{font-family:var(--ff-body);font-size:clamp(1.6rem,6vw,2.4rem);font-weight:700;color:var(--text-dark);letter-spacing:.08em;margin:.8rem 0}
+.copy-btn{display:inline-flex;align-items:center;gap:.5rem;background:linear-gradient(135deg,var(--gold),var(--gold-bright));color:#fff;font-weight:700;font-size:.9rem;padding:.7rem 1.6rem;border-radius:50px;cursor:pointer;min-height:48px;transition:transform .15s,box-shadow .15s}
+.copy-btn:hover{transform:scale(1.04);box-shadow:0 4px 16px rgba(240,165,0,.3)}
+.copy-btn:active{transform:scale(.97)}
+.copy-btn svg{width:18px;height:18px}
+.note-card{max-width:360px;margin:1.5rem auto 0;padding:1rem 1.5rem;background:var(--blossom);border-left:3px solid var(--gold-light);border-radius:8px;font-style:italic;color:var(--text-mid);font-family:var(--ff-heading);font-size:1.05rem}
+
+/* QR card area */
+.qr-wrap{display:flex;flex-direction:column;align-items:center;gap:1rem}
+.qr-wrap img{width:100%;max-width:300px;object-fit:contain;border-radius:12px;border:2px solid var(--gold-light)}
+.qr-placeholder{width:100%;max-width:300px;min-height:200px;border:2px dashed var(--gold-light);border-radius:12px;background:var(--blossom);display:flex;align-items:center;justify-content:center;padding:2rem}
+.qr-placeholder span{font-family:var(--ff-heading);font-style:italic;color:var(--text-mid);font-size:1.05rem;text-align:center}
+.download-btn{display:inline-flex;align-items:center;gap:.5rem;background:var(--bg-section);color:var(--gold);font-weight:600;padding:.6rem 1.4rem;border-radius:50px;cursor:pointer;border:1px solid var(--gold-light);min-height:48px;transition:background .2s}
+.download-btn:hover{background:var(--gold-light)}
+
+/* === MY EIDI FORM === */
+#my-eidi{text-align:center}
+.form-wrap{max-width:440px;margin:0 auto}
+.field{margin-bottom:1.5rem;text-align:left}
+.field label{display:block;font-weight:600;font-size:.85rem;color:var(--text-mid);margin-bottom:.4rem;text-transform:uppercase;letter-spacing:.06em}
+.field input,.field textarea{width:100%;padding:.85rem 1rem;font-size:16px;background:var(--bg-card);border:1.5px solid var(--gold-light);border-radius:10px;color:var(--text-dark);transition:border-color .2s}
+.field input:focus,.field textarea:focus{border-color:var(--gold-bright)}
+.field textarea{resize:vertical;min-height:80px}
+.char-count{text-align:right;font-size:.75rem;color:var(--text-mid);margin-top:.3rem}
+.upload-area{border:2px dashed var(--gold-light);border-radius:12px;padding:2rem;cursor:pointer;text-align:center;color:var(--text-mid);transition:border-color .2s,background .2s;min-height:100px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.5rem}
+.upload-area:hover,.upload-area.drag{border-color:var(--gold-bright);background:rgba(252,217,122,.1)}
+.upload-area svg{width:36px;height:36px;stroke:var(--gold);fill:none}
+.upload-area img{max-width:160px;max-height:160px;border-radius:8px;margin-top:.5rem}
+.upload-area .remove-preview{color:var(--gold);font-size:.8rem;cursor:pointer;margin-top:.3rem;text-decoration:underline}
+.generate-btn{display:inline-flex;align-items:center;gap:.5rem;background:linear-gradient(135deg,var(--gold),var(--gold-bright));color:#fff;font-weight:700;font-size:1rem;padding:.9rem 2.2rem;border-radius:50px;cursor:pointer;min-height:48px;transition:transform .15s,box-shadow .15s;margin-top:.5rem}
+.generate-btn:hover{transform:scale(1.04);box-shadow:0 4px 16px rgba(240,165,0,.3)}
+
+/* Result card */
+.result-card{margin-top:2rem;text-align:center}
+.result-link{word-break:break-all;font-size:.82rem;background:var(--cream-white);border:1px solid var(--gold-light);border-radius:10px;padding:.8rem 1rem;color:var(--text-mid);margin:1rem 0;display:block}
+.share-btns{display:flex;flex-wrap:wrap;gap:.8rem;justify-content:center;margin-top:1rem}
+.share-btn{display:inline-flex;align-items:center;gap:.4rem;padding:.6rem 1.2rem;border-radius:50px;font-size:.85rem;font-weight:600;cursor:pointer;min-height:48px;transition:transform .12s}
+.share-btn:hover{transform:scale(1.04)}
+.share-btn.copy{background:var(--gold-light);color:var(--text-dark)}
+.share-btn.native{background:var(--gold);color:#fff}
+.share-btn.whatsapp{background:#25D366;color:#fff}
+
+/* === COFFEE === */
+#coffee{text-align:center}
+.coffee-msg{font-family:var(--ff-heading);font-size:clamp(1rem,2.5vw,1.15rem);color:var(--text-mid);margin-bottom:2rem;font-style:italic;max-width:400px;margin-left:auto;margin-right:auto}
+
+/* === FOOTER === */
+#footer{text-align:center;padding:1.5rem;font-size:.8rem;color:var(--text-mid);background:var(--bg-section);border-top:1px solid var(--gold-light)}
+
+/* === ANIMATIONS === */
+.reveal{opacity:0;transform:translateY(30px);transition:opacity .7s ease,transform .7s ease}
+.reveal.visible{opacity:1;transform:translateY(0)}
+
+/* === TOAST === */
+.toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(100px);background:var(--gold);color:#fff;padding:.7rem 1.5rem;border-radius:50px;font-size:.85rem;font-weight:600;z-index:9999;transition:transform .35s ease;pointer-events:none}
+.toast.show{transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+
+<!-- LOADER -->
+<div id="loader">
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M50 10 A40 40 0 1 1 25 18" fill="none" stroke="#c9820a" stroke-width="4" stroke-linecap="round"/><circle cx="50" cy="10" r="5" fill="#f0a500"/></svg>
+<p>Loading Eid magic...</p>
+<div id="load-bar"><span id="load-progress"></span></div>
+</div>
+
+<!-- CURSOR -->
+<div class="cursor-dot"></div>
+<div class="cursor-ring"></div>
+
+<!-- NAV -->
+<nav id="nav">
+<a href="#" class="nav-logo">
+<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c1.4 0 2.7-.3 3.9-.8C11.5 19.5 8 15.9 8 12s3.5-8 7.9-9.2C14.7 2.3 13.4 2 12 2z"/></svg>
+EIDI
+</a>
+<button class="hamburger" id="ham" aria-label="Menu"><span></span><span></span><span></span></button>
+<ul class="nav-links" id="nav-links">
+<li><a href="#give-eidi">Give Eidi</a></li>
+<li><a href="#my-eidi">My Eidi</a></li>
+<li><a href="#coffee">Buy Me a Coffee</a></li>
+</ul>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+<canvas id="hero-canvas"></canvas>
+<div id="hero-fade"></div>
+<div id="veo-cover"></div>
+
+<!-- Text blocks timed to animation acts -->
+<!-- Act 1: Moon scene (frames 1-60 → scroll 0% - 29%) -->
+<div class="hero-text pos-left" data-start="0.02" data-end="0.22">
+<div class="bn">ঈদ মোবারক 🌙</div>
+<div class="en">Eid brings joy. Pass it forward.</div>
+</div>
+<!-- Act 2: Arch & blossom tree (frames 61-150 → scroll 29% - 73%) -->
+<div class="hero-text pos-right" data-start="0.25" data-end="0.45">
+<div class="bn">Make someone smile today ✨</div>
+<div class="en">A small gift, a big heart.</div>
+</div>
+<div class="hero-text pos-center" data-start="0.48" data-end="0.68">
+<div class="bn">Your eidi is just a tap away 💛</div>
+<div class="en">Scroll down. Send the love.</div>
+</div>
+
+
+<div id="scroll-arrow"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div>
+</section>
+
+<!-- GIVE EIDI -->
+<section class="section" id="give-eidi" style="background:var(--bg-main)">
+<div class="divider"><svg viewBox="0 0 24 24"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c1.4 0 2.7-.3 3.9-.8C11.5 19.5 8 15.9 8 12s3.5-8 7.9-9.2C14.7 2.3 13.4 2 12 2z"/></svg></div>
+<h2 class="section-title reveal">Give Eidi 💝</h2>
+<p class="section-sub reveal">Send your Eid Salami with love</p>
+
+<!-- bKash number card -->
+<div id="number-card" class="card card-float reveal">
+<p style="font-size:.8rem;color:var(--text-mid);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.3rem">bKash Number</p>
+<p class="bkash-number" id="bkash-display">019 3330 2333</p>
+<button class="copy-btn" id="copy-number" aria-label="Copy number">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+Copy Number
+</button>
+</div>
+
+<!-- QR code card — ALWAYS visible -->
+<div id="qr-card" class="card card-float-delayed reveal">
+<div class="qr-wrap" id="qr-wrap-inner">
+<!-- Content set by JS: either real QR image or placeholder -->
+</div>
+</div>
+
+<div id="note-display" class="note-card" style="display:none"></div>
+</section>
+
+<!-- MY EIDI -->
+<section class="section" id="my-eidi" style="background:var(--bg-section)">
+<div class="divider"><svg viewBox="0 0 24 24"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c1.4 0 2.7-.3 3.9-.8C11.5 19.5 8 15.9 8 12s3.5-8 7.9-9.2C14.7 2.3 13.4 2 12 2z"/></svg></div>
+<h2 class="section-title reveal">My Eidi 🎁</h2>
+<p class="section-sub reveal">Create your personal Eidi collection link</p>
+<div class="form-wrap reveal">
+<div class="field">
+<label for="input-number">bKash Number</label>
+<input type="tel" id="input-number" placeholder="01XXXXXXXXX" maxlength="11" inputmode="numeric">
+</div>
+<div class="field">
+<label>QR Code Image</label>
+<div class="upload-area" id="upload-area">
+<svg viewBox="0 0 24 24" stroke-width="1.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+<span>Tap to upload QR image</span>
+</div>
+<input type="file" id="qr-upload" accept="image/*" style="display:none">
+</div>
+<div class="field">
+<label for="input-note">Personal Note</label>
+<textarea id="input-note" placeholder="Send me Eid salami! 🌙" maxlength="100" rows="2"></textarea>
+<div class="char-count"><span id="char-current">0</span>/100</div>
+</div>
+<button class="generate-btn" id="generate-btn">Generate My Link</button>
+<div class="result-card" id="result-card" style="display:none">
+<p style="font-weight:600;color:var(--gold);font-size:1.1rem">Your link is ready! 🎉</p>
+<code class="result-link" id="result-link"></code>
+<div class="share-btns">
+<button class="share-btn copy" id="share-copy">📋 Copy Link</button>
+<button class="share-btn native" id="share-native">📤 Share</button>
+<button class="share-btn whatsapp" id="share-whatsapp">💬 WhatsApp</button>
+</div>
+</div>
+</div>
+</section>
+
+<!-- COFFEE -->
+<section class="section" id="coffee" style="background:var(--bg-main)">
+<div class="divider"><svg viewBox="0 0 24 24"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c1.4 0 2.7-.3 3.9-.8C11.5 19.5 8 15.9 8 12s3.5-8 7.9-9.2C14.7 2.3 13.4 2 12 2z"/></svg></div>
+<h2 class="section-title reveal">Buy Me a Coffee ☕</h2>
+<p class="coffee-msg reveal">If EIDI brought a smile, consider sending a little love to the developer too. Every bit helps keep this running. 💛</p>
+<div class="card card-float reveal" style="max-width:340px">
+<p style="font-size:.8rem;color:var(--text-mid);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.3rem">Developer bKash</p>
+<p class="bkash-number">019 3330 2333</p>
+<button class="copy-btn" id="copy-dev" aria-label="Copy developer number">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+Copy
+</button>
+</div>
+</section>
+
+<!-- FOOTER -->
+<footer id="footer">Made with 💛 by Asif for Eid</footer>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+/* ===== UTILITY ===== */
+const $=s=>document.querySelector(s);
+const $$=s=>document.querySelectorAll(s);
+function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200)}
+function copyText(text){playClick();navigator.clipboard?navigator.clipboard.writeText(text).then(()=>toast('Copied!')):fallbackCopy(text)}
+function fallbackCopy(t){const a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();document.execCommand('copy');document.body.removeChild(a);toast('Copied!')}
+
+/* ===== CLICK SOUND (Web Audio API) ===== */
+let audioCtx=null;
+function playClick(){
+  try{
+    if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+    const osc=audioCtx.createOscillator();
+    const gain=audioCtx.createGain();
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.type='sine';
+    osc.frequency.setValueAtTime(800,audioCtx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(400,audioCtx.currentTime+0.08);
+    gain.gain.setValueAtTime(0.15,audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+0.1);
+    osc.start(audioCtx.currentTime);
+    osc.stop(audioCtx.currentTime+0.1);
+  }catch(e){}
+}
+document.addEventListener('click',e=>{if(e.target.closest('button,a,.upload-area'))playClick()});
+
+/* ===== AMBIENT HERO SOUND ===== */
+let ambientStarted=false;
+let ambientGain=null;
+const MAX_AMBIENT_VOL=0.06;
+
+function startAmbient(){
+  if(ambientStarted)return;
+  ambientStarted=true;
+  try{
+    if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+    ambientGain=audioCtx.createGain();
+    ambientGain.gain.setValueAtTime(0,audioCtx.currentTime);
+    ambientGain.connect(audioCtx.destination);
+
+    // Layer 1: deep warm base
+    const o1=audioCtx.createOscillator();
+    o1.type='sine';o1.frequency.value=110;
+    const g1=audioCtx.createGain();g1.gain.value=0.4;
+    o1.connect(g1);g1.connect(ambientGain);o1.start();
+
+    // Layer 2: gentle fifth
+    const o2=audioCtx.createOscillator();
+    o2.type='sine';o2.frequency.value=165;
+    const g2=audioCtx.createGain();g2.gain.value=0.25;
+    o2.connect(g2);g2.connect(ambientGain);o2.start();
+
+    // Layer 3: soft octave shimmer
+    const o3=audioCtx.createOscillator();
+    o3.type='sine';o3.frequency.value=220.5;
+    const g3=audioCtx.createGain();g3.gain.value=0.15;
+    o3.connect(g3);g3.connect(ambientGain);o3.start();
+
+    // Layer 4: airy high tone
+    const o4=audioCtx.createOscillator();
+    o4.type='sine';o4.frequency.value=330;
+    const g4=audioCtx.createGain();g4.gain.value=0.08;
+    o4.connect(g4);g4.connect(ambientGain);o4.start();
+
+    // Gentle LFO on master for breathing feel
+    const lfo=audioCtx.createOscillator();
+    const lfoGain=audioCtx.createGain();
+    lfo.type='sine';lfo.frequency.value=0.15;
+    lfoGain.gain.value=0.015;
+    lfo.connect(lfoGain);
+    lfoGain.connect(ambientGain.gain);
+    lfo.start();
+
+    updateAmbientVolume();
+  }catch(e){}
+}
+
+function updateAmbientVolume(){
+  if(!ambientGain)return;
+  const heroEl=$('#hero');
+  const heroBottom=heroEl.offsetTop+heroEl.offsetHeight;
+  const scrollY=window.scrollY;
+  const fadeStart=heroBottom-window.innerHeight*1.5;
+  const fadeEnd=heroBottom-window.innerHeight*0.2;
+  let vol=MAX_AMBIENT_VOL;
+  if(scrollY>=fadeEnd) vol=0;
+  else if(scrollY>fadeStart) vol=MAX_AMBIENT_VOL*(1-(scrollY-fadeStart)/(fadeEnd-fadeStart));
+  ambientGain.gain.setTargetAtTime(vol,audioCtx.currentTime,0.3);
+}
+window.addEventListener('scroll',updateAmbientVolume,{passive:true});
+
+// Start ambient on first user interaction (autoplay policy)
+function initAmbientOnce(){startAmbient();document.removeEventListener('click',initAmbientOnce);document.removeEventListener('scroll',initAmbientOnce)}
+document.addEventListener('click',initAmbientOnce,{once:true});
+document.addEventListener('scroll',initAmbientOnce,{once:true});
+
+/* ===== URL PARAMS ===== */
+const params=new URLSearchParams(location.search);
+const paramNumber=params.get('number');
+const paramQR=params.get('qr');
+const paramNote=params.get('note');
+const devNumber='01933302333';
+function formatBkash(n){if(!n||n.length!==11)return n||'019 3330 2333';return n.slice(0,3)+' '+n.slice(3,7)+' '+n.slice(7)}
+if(paramNumber){
+$('#bkash-display').textContent=formatBkash(paramNumber);
+document.title='Send Eidi to '+formatBkash(paramNumber)+' 🌙';
+}
+
+/* ===== QR CARD — always visible ===== */
+const qrWrapInner=$('#qr-wrap-inner');
+if(paramQR){
+  // Show actual QR image with save button
+  const decodedQR=decodeURIComponent(paramQR);
+  qrWrapInner.innerHTML=`
+    <img id="qr-img" src="${decodedQR}" alt="QR Code" style="width:100%;max-width:300px;border:2px solid var(--gold-light);border-radius:12px">
+    <button class="download-btn" id="download-qr" aria-label="Download QR">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Save QR
+    </button>`;
+  // Bind download
+  setTimeout(()=>{
+    const dlBtn=$('#download-qr');
+    if(dlBtn) dlBtn.onclick=()=>{const img=$('#qr-img');const a=document.createElement('a');a.href=img.src;a.download='eidi-qr.png';a.click()};
+  },50);
+} else {
+  // Show placeholder box
+  qrWrapInner.innerHTML=`
+    <div class="qr-placeholder">
+      <span>Your QR code will appear here</span>
+    </div>`;
+}
+
+if(paramNote){
+$('#note-display').style.display='block';
+$('#note-display').textContent='"'+decodeURIComponent(paramNote)+'"';
+}
+
+/* ===== COPY BUTTONS ===== */
+$('#copy-number').onclick=()=>copyText(paramNumber||devNumber);
+$('#copy-dev').onclick=()=>copyText(devNumber);
+
+/* ===== NAV ===== */
+const nav=$('#nav'),ham=$('#ham'),navLinks=$('#nav-links');
+ham.onclick=()=>{ham.classList.toggle('open');navLinks.classList.toggle('open')};
+navLinks.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{ham.classList.remove('open');navLinks.classList.remove('open')}));
+const heroH=()=>$('#hero').offsetHeight;
+window.addEventListener('scroll',()=>{
+const y=window.scrollY;
+nav.classList.toggle('scrolled',y>heroH()*.85);
+$('#scroll-arrow').style.opacity=y>100?'0':'1';
+},{ passive:true });
+
+/* ===== HERO TEXT SCROLL ===== */
+function updateHeroTexts(){
+const y=window.scrollY;
+const total=$('#hero').offsetHeight-window.innerHeight;
+const progress=Math.min(y/total,1);
+$$('.hero-text').forEach(el=>{
+const s=+el.dataset.start,e=+el.dataset.end;
+const mid=(s+e)/2;
+let opacity=0,ty=20;
+if(progress>=s&&progress<=e){
+const half=(e-s)/2;
+if(progress<mid){opacity=(progress-s)/half;ty=20*(1-((progress-s)/half))}
+else{opacity=1-((progress-mid)/half);ty=-20*((progress-mid)/half)}
+opacity=Math.max(0,Math.min(1,opacity));
+}
+el.style.opacity=opacity;
+el.style.transform=el.classList.contains('pos-center')?`translateX(-50%) translateY(${ty}px)`:`translateY(${ty}px)`;
+});
+}
+window.addEventListener('scroll',updateHeroTexts,{passive:true});
+updateHeroTexts();
+
+/* ===== HERO CANVAS ANIMATION ===== */
+(function(){
+const canvas=$('#hero-canvas');
+const ctx=canvas.getContext('2d');
+const TOTAL_FRAMES=206;
+const PRIORITY_COUNT=30;
+const frames=new Array(TOTAL_FRAMES);
+let loadedCount=0;
+let initialBatchReady=false;
+let currentFrame=0;
+let displayFrame=0;
+
+// Canvas sizing
+function resizeCanvas(){
+  canvas.width=window.innerWidth;
+  canvas.height=window.innerHeight;
+}
+resizeCanvas();
+window.addEventListener('resize',resizeCanvas);
+
+// Draw a frame cover-fit (fill canvas, centered, no black bars)
+function drawFrame(img){
+  if(!img)return;
+  const cw=canvas.width, ch=canvas.height;
+  const iw=img.naturalWidth||img.width, ih=img.naturalHeight||img.height;
+  if(!iw||!ih)return;
+  // cover fit
+  const scale=Math.max(cw/iw, ch/ih);
+  const dw=iw*scale, dh=ih*scale;
+  const dx=(cw-dw)/2, dy=(ch-dh)/2;
+  ctx.clearRect(0,0,cw,ch);
+  ctx.drawImage(img, dx, dy, dw, dh);
+}
+
+// Pad number to 3 digits
+function padNum(n){return String(n).padStart(3,'0')}
+
+// Load a single frame, returns promise
+function loadFrame(idx){
+  return new Promise((resolve)=>{
+    const img=new Image();
+    img.onload=()=>{
+      frames[idx]=img;
+      loadedCount++;
+      // Update progress bar
+      const pct=Math.round((loadedCount/TOTAL_FRAMES)*100);
+      const bar=$('#load-progress');
+      if(bar) bar.style.width=pct+'%';
+      // Check if initial batch done
+      if(!initialBatchReady && loadedCount>=PRIORITY_COUNT){
+        initialBatchReady=true;
+        // Fade out loader
+        setTimeout(()=>{
+          $('#loader').classList.add('hide');
+          setTimeout(()=>$('#loader').style.display='none',600);
+        },300);
+        // Draw first frame
+        if(frames[0]) drawFrame(frames[0]);
+      }
+      resolve();
+    };
+    img.onerror=()=>resolve(); // skip broken frames
+    img.src='all%20frames/ezgif-frame-'+padNum(idx+1)+'.jpg';
+  });
+}
+
+// Load priority frames first (1-30), then rest
+async function loadAllFrames(){
+  // Priority batch
+  const priorityPromises=[];
+  for(let i=0;i<PRIORITY_COUNT;i++){
+    priorityPromises.push(loadFrame(i));
+  }
+  await Promise.all(priorityPromises);
+
+  // Rest in background, small batches to avoid blocking
+  for(let i=PRIORITY_COUNT;i<TOTAL_FRAMES;i+=8){
+    const batch=[];
+    for(let j=i;j<Math.min(i+8,TOTAL_FRAMES);j++){
+      batch.push(loadFrame(j));
+    }
+    await Promise.all(batch);
+  }
+}
+
+// Scroll-to-frame mapping
+function getTargetFrame(){
+  const scrollY=window.scrollY;
+  const heroEl=$('#hero');
+  const maxScroll=heroEl.offsetHeight-window.innerHeight;
+  if(maxScroll<=0) return 0;
+  const fraction=Math.min(Math.max(scrollY/maxScroll,0),1);
+  return Math.min(Math.floor(fraction*(TOTAL_FRAMES-1)),TOTAL_FRAMES-1);
+}
+
+// rAF loop with interpolation for smooth scrubbing
+function animationLoop(){
+  const target=getTargetFrame();
+  // Smooth interpolation — lerp toward the target
+  displayFrame+=(target-displayFrame)*0.15;
+  const idx=Math.round(displayFrame);
+  if(idx!==currentFrame && frames[idx]){
+    drawFrame(frames[idx]);
+    currentFrame=idx;
+  }
+  requestAnimationFrame(animationLoop);
+}
+
+// Also hide hero fixed elements when scrolled past hero
+function updateHeroVisibility(){
+  const heroEl=$('#hero');
+  const rect=heroEl.getBoundingClientRect();
+  const pastHero=rect.bottom<=0;
+  canvas.style.visibility=pastHero?'hidden':'visible';
+  $('#hero-fade').style.visibility=pastHero?'hidden':'visible';
+  $('#veo-cover').style.visibility=pastHero?'hidden':'visible';
+}
+window.addEventListener('scroll',updateHeroVisibility,{passive:true});
+
+// Start
+loadAllFrames();
+requestAnimationFrame(animationLoop);
+})();
+
+/* ===== INTERSECTION OBSERVER ===== */
+const obs=new IntersectionObserver((entries)=>{entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target)}})},{threshold:.15,rootMargin:'0px 0px -40px 0px'});
+$$('.reveal').forEach(el=>obs.observe(el));
+
+/* ===== CUSTOM CURSOR ===== */
+if(window.matchMedia('(pointer:fine)').matches){
+const dot=$('.cursor-dot'),ring=$('.cursor-ring');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;dot.style.transform=`translate(${mx-3}px,${my-3}px)`});
+(function loop(){rx+=(mx-rx)*.15;ry+=(my-ry)*.15;ring.style.transform=`translate(${rx-16}px,${ry-16}px)`;requestAnimationFrame(loop)})();
+document.addEventListener('mouseover',e=>{if(e.target.closest('a,button,.upload-area'))ring.classList.add('hover')});
+document.addEventListener('mouseout',e=>{if(e.target.closest('a,button,.upload-area'))ring.classList.remove('hover')});
+document.body.style.cursor='none';
+$$('a,button').forEach(el=>el.style.cursor='none');
+}
+
+/* ===== QR UPLOAD ===== */
+const uploadArea=$('#upload-area'),qrInput=$('#qr-upload');
+let uploadedQRData=null;
+uploadArea.onclick=()=>qrInput.click();
+uploadArea.addEventListener('dragover',e=>{e.preventDefault();uploadArea.classList.add('drag')});
+uploadArea.addEventListener('dragleave',()=>uploadArea.classList.remove('drag'));
+uploadArea.addEventListener('drop',e=>{e.preventDefault();uploadArea.classList.remove('drag');handleFile(e.dataTransfer.files[0])});
+qrInput.onchange=e=>handleFile(e.target.files[0]);
+function handleFile(f){
+if(!f)return;
+const reader=new FileReader();
+reader.onload=e=>{
+uploadedQRData=e.target.result;
+uploadArea.innerHTML=`<img src="${uploadedQRData}" alt="QR Preview"><span class="remove-preview">Remove</span>`;
+uploadArea.querySelector('.remove-preview').onclick=ev=>{
+ev.stopPropagation();uploadedQRData=null;
+uploadArea.innerHTML='<svg viewBox="0 0 24 24" stroke="var(--gold)" fill="none" stroke-width="1.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><span>Tap to upload QR image</span>';
+qrInput.value='';
+}};
+reader.readAsDataURL(f);
+}
+
+/* ===== CHAR COUNTER ===== */
+$('#input-note').addEventListener('input',function(){$('#char-current').textContent=this.value.length});
+
+/* ===== GENERATE LINK ===== */
+$('#generate-btn').onclick=()=>{
+const num=$('#input-number').value.trim();
+const note=$('#input-note').value.trim();
+if(!num&&!uploadedQRData){toast('Enter a number or upload QR');return}
+const base=location.origin+location.pathname;
+const p=new URLSearchParams();
+if(num)p.set('number',num);
+if(uploadedQRData)p.set('qr',encodeURIComponent(uploadedQRData));
+if(note)p.set('note',encodeURIComponent(note));
+const url=base+'?'+p.toString();
+$('#result-link').textContent=url.length>120?url.slice(0,117)+'...':url;
+$('#result-link').dataset.full=url;
+$('#result-card').style.display='block';
+$('#result-card').scrollIntoView({behavior:'smooth',block:'center'});
+
+$('#share-copy').onclick=()=>copyText(url);
+$('#share-native').onclick=()=>{
+if(navigator.share)navigator.share({title:'Send me Eid Salami! 🌙',url}).catch(()=>{});
+else copyText(url);
+};
+$('#share-whatsapp').onclick=()=>window.open('https://wa.me/?text='+encodeURIComponent('Send me Eid Salami! 🌙 '+url),'_blank');
+};
+</script>
+</body>
+</html>
