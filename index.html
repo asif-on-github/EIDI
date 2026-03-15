@@ -52,23 +52,23 @@ a{text-decoration:none;color:inherit}
 @media(pointer:coarse){.cursor-dot,.cursor-ring{display:none!important}}
 
 /* === NAV === */
-#nav{position:fixed;top:0;left:0;right:0;height:var(--nav-h);z-index:9000;display:flex;align-items:center;justify-content:space-between;padding:0 clamp(1rem,4vw,2.5rem);transition:background .3s,box-shadow .3s}
+#nav{position:fixed;top:0;left:0;right:0;height:var(--nav-h);z-index:9000;display:flex;align-items:center;justify-content:space-between;padding:0 clamp(1rem,4vw,2.5rem);transition:background .3s,box-shadow .3s;overflow:visible}
 #nav.scrolled{background:rgba(253,246,227,.95);backdrop-filter:blur(8px);box-shadow:0 2px 12px rgba(201,130,10,.1)}
-.nav-logo{font-family:var(--ff-logo);font-size:clamp(1.1rem,3vw,1.4rem);display:flex;align-items:center;gap:.45rem;color:var(--cream-white);transition:color .3s}
+.nav-logo{font-family:var(--ff-logo);font-size:clamp(1.1rem,3vw,1.4rem);display:flex;align-items:center;gap:.45rem;color:var(--cream-white);transition:color .3s;position:relative;z-index:9002}
 #nav.scrolled .nav-logo{color:var(--gold)}
 .nav-logo svg{width:20px;height:20px}
 .nav-links{display:flex;gap:clamp(1rem,3vw,2rem);list-style:none}
 .nav-links a{font-size:.8rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gold-light);transition:color .3s}
 #nav.scrolled .nav-links a{color:var(--text-dark)}
 .nav-links a:hover{color:var(--gold-bright)}
-.hamburger{display:none;flex-direction:column;gap:5px;background:none;cursor:pointer;padding:8px;min-width:48px;min-height:48px;align-items:center;justify-content:center}
+.hamburger{display:none;flex-direction:column;gap:5px;background:none;cursor:pointer;padding:8px;min-width:48px;min-height:48px;align-items:center;justify-content:center;position:relative;z-index:9002;border:none}
 .hamburger span{display:block;width:22px;height:2px;background:var(--gold-light);border-radius:2px;transition:transform .3s,opacity .3s}
 #nav.scrolled .hamburger span{background:var(--gold)}
 .hamburger.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
 .hamburger.open span:nth-child(2){opacity:0}
 .hamburger.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
 @media(max-width:768px){
-.nav-links{position:absolute;top:var(--nav-h);left:0;right:0;flex-direction:column;background:rgba(253,246,227,.97);backdrop-filter:blur(10px);padding:1.5rem;gap:1.2rem;transform:translateY(-120%);transition:transform .35s ease;box-shadow:0 6px 20px rgba(0,0,0,.08)}
+.nav-links{position:fixed;top:var(--nav-h);left:0;right:0;flex-direction:column;background:rgba(253,246,227,.97);backdrop-filter:blur(10px);padding:1.5rem;gap:1.2rem;transform:translateY(-120%);transition:transform .35s ease;box-shadow:0 6px 20px rgba(0,0,0,.08);z-index:9001}
 .nav-links.open{transform:translateY(0)}
 .nav-links a{color:var(--text-dark)!important;font-size:.9rem}
 .hamburger{display:flex}
@@ -129,7 +129,7 @@ a{text-decoration:none;color:inherit}
 .qr-wrap{display:flex;flex-direction:column;align-items:center;gap:1rem}
 .qr-box{width:280px;height:280px;border:2px solid var(--gold-light);border-radius:12px;background:var(--bg-card);display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .qr-box img{display:block;width:280px;height:280px;object-fit:contain}
-.qr-placeholder{width:280px;height:280px;border:2px dashed var(--gold-light);border-radius:12px;background:var(--blossom);display:flex;align-items:center;justify-content:center;padding:2rem}
+.qr-placeholder{width:100%;max-width:300px;min-height:200px;border:2px dashed var(--gold-light);border-radius:12px;background:var(--blossom);display:flex;align-items:center;justify-content:center;padding:2rem}
 .qr-placeholder span{font-family:var(--ff-heading);font-style:italic;color:var(--text-mid);font-size:1.05rem;text-align:center}
 .download-btn{display:inline-flex;align-items:center;gap:.5rem;background:var(--bg-section);color:var(--gold);font-weight:600;padding:.6rem 1.4rem;border-radius:50px;cursor:pointer;border:1px solid var(--gold-light);min-height:48px;transition:background .2s}
 .download-btn:hover{background:var(--gold-light)}
@@ -326,6 +326,8 @@ const _sb=window.supabase.createClient(
   'https://lvtvzecllqrrovhkbufh.supabase.co',
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx2dHZ6ZWNsbHFycm92aGtidWZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM1ODc3NTcsImV4cCI6MjA4OTE2Mzc1N30.PXW_RigUisBdKtOz3fF6rl1qHqDiyw_FCvqyaDsue0Q'
 );
+
+/* ===== CLICK SOUND (Web Audio API) ===== */
 let audioCtx=null;
 function playClick(){
   try{
@@ -574,20 +576,23 @@ async function loadAllFrames(){
 }
 
 // Scroll-to-frame mapping
+let currentScrollY=window.scrollY;
+window.addEventListener('scroll',()=>{currentScrollY=window.scrollY},{passive:true});
+window.addEventListener('touchmove',()=>{currentScrollY=window.scrollY},{passive:true});
+
 function getTargetFrame(){
-  const scrollY=window.scrollY;
   const heroEl=$('#hero');
   const maxScroll=heroEl.offsetHeight-window.innerHeight;
   if(maxScroll<=0) return 0;
-  const fraction=Math.min(Math.max(scrollY/maxScroll,0),1);
+  const fraction=Math.min(Math.max(currentScrollY/maxScroll,0),1);
   return Math.min(Math.floor(fraction*(TOTAL_FRAMES-1)),TOTAL_FRAMES-1);
 }
 
-// rAF loop with interpolation for smooth scrubbing
+// rAF loop — faster lerp on mobile for responsive feel
+const lerpSpeed=('ontouchstart' in window)?0.3:0.15;
 function animationLoop(){
   const target=getTargetFrame();
-  // Smooth interpolation — lerp toward the target
-  displayFrame+=(target-displayFrame)*0.15;
+  displayFrame+=(target-displayFrame)*lerpSpeed;
   const idx=Math.round(displayFrame);
   if(idx!==currentFrame && frames[idx]){
     drawFrame(frames[idx]);
@@ -631,8 +636,6 @@ $$('a,button').forEach(el=>el.style.cursor='none');
 /* ===== QR UPLOAD — via Supabase ===== */
 const uploadArea=$('#upload-area'),qrInput=$('#qr-upload');
 let uploadedQRUrl=null;
-let uploadedQRFile=null;
-
 uploadArea.onclick=()=>qrInput.click();
 uploadArea.addEventListener('dragover',e=>{e.preventDefault();uploadArea.classList.add('drag')});
 uploadArea.addEventListener('dragleave',()=>uploadArea.classList.remove('drag'));
@@ -642,9 +645,6 @@ qrInput.onchange=e=>handleFile(e.target.files[0]);
 async function handleFile(f){
   if(!f) return;
   uploadedQRUrl=null;
-  uploadedQRFile=f;
-
-  // Show preview immediately
   const reader=new FileReader();
   reader.onload=e=>{
     uploadArea.innerHTML=`
@@ -652,18 +652,13 @@ async function handleFile(f){
       <span style="font-size:.8rem;color:var(--gold);margin-top:.3rem">Uploading...</span>
       <span class="remove-preview" style="font-size:.75rem;color:var(--text-mid);cursor:pointer;text-decoration:underline">Remove</span>`;
     uploadArea.querySelector('.remove-preview').onclick=ev=>{
-      ev.stopPropagation();
-      uploadedQRUrl=null;uploadedQRFile=null;
+      ev.stopPropagation();uploadedQRUrl=null;
       uploadArea.innerHTML='<svg viewBox="0 0 24 24" stroke="var(--gold)" fill="none" stroke-width="1.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><span>Tap to upload QR image</span>';
-      qrInput.value='';
-      $('#generate-btn').disabled=false;
+      qrInput.value='';$('#generate-btn').disabled=false;
     };
   };
   reader.readAsDataURL(f);
-
-  // Disable generate button while uploading
   $('#generate-btn').disabled=true;
-
   try{
     const ext=f.name.split('.').pop()||'png';
     const fileName='qr_'+Date.now()+'.'+ext;
@@ -671,8 +666,6 @@ async function handleFile(f){
     if(error) throw error;
     const{data:urlData}=_sb.storage.from('qr-images').getPublicUrl(data.path);
     uploadedQRUrl=urlData.publicUrl;
-    // Update upload area to show success
-    const img=uploadArea.querySelector('img');
     const status=uploadArea.querySelector('span:not(.remove-preview)');
     if(status) status.textContent='✅ Ready';
     $('#generate-btn').disabled=false;
@@ -680,8 +673,7 @@ async function handleFile(f){
     toast('Upload failed, try again');
     uploadedQRUrl=null;
     uploadArea.innerHTML='<svg viewBox="0 0 24 24" stroke="var(--gold)" fill="none" stroke-width="1.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><span>Tap to upload QR image</span>';
-    qrInput.value='';
-    $('#generate-btn').disabled=false;
+    qrInput.value='';$('#generate-btn').disabled=false;
   }
 }
 
@@ -693,12 +685,11 @@ $('#generate-btn').onclick=()=>{
   const num=$('#input-number').value.trim();
   const note=$('#input-note').value.trim();
   if(!num&&!uploadedQRUrl){toast('Enter a number or upload QR');return}
-  const base=location.origin+location.pathname;
   const p=new URLSearchParams();
   if(num) p.set('number',num);
   if(uploadedQRUrl) p.set('qr',uploadedQRUrl);
   if(note) p.set('note',encodeURIComponent(note));
-  const url=base+'?'+p.toString();
+  const url=location.origin+location.pathname+'?'+p.toString();
   $('#result-link').textContent=url;
   $('#result-link').dataset.full=url;
   $('#result-card').style.display='block';
